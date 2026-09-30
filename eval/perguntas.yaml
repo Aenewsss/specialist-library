@@ -1,0 +1,180 @@
+# Conjunto de teste do MVP: vídeo qgikRaQkPGU (Debate sobre o dilúvio, Rodrigo Silva x Sérgio Sacani).
+# RASCUNHO escrito a partir da transcrição automática; precisa de revisão de quem conhece o conteúdo.
+#
+# resposta_entre_s: [inicio, fim] ou lista de intervalos, se a resposta aparece em mais de um lugar.
+# pessoa: quem deve ter dito. Acerto = trecho que se sobrepõe ao intervalo E é da pessoa certa.
+# sem_resposta: true → o esperado é "não encontrado".
+
+- pergunta: "quais são as opiniões dos teólogos sobre o dilúvio?"
+  video_id: qgikRaQkPGU
+  pessoa: Rodrigo Silva
+  resposta_entre_s: [242, 303]
+
+- pergunta: "o que a geologia diz sobre o dilúvio?"
+  video_id: qgikRaQkPGU
+  pessoa: Sérgio Sacani
+  resposta_entre_s: [[80, 150], [1512, 1561]]
+
+- pergunta: "como as marcas de tsunamis antigos se relacionam com o dilúvio?"
+  video_id: qgikRaQkPGU
+  pessoa: Sérgio Sacani
+  resposta_entre_s: [98, 208]
+
+- pergunta: "por que é difícil encontrar evidências geológicas de eventos muito antigos?"
+  video_id: qgikRaQkPGU
+  pessoa: Sérgio Sacani
+  resposta_entre_s: [148, 190]
+
+- pergunta: "o que era o mundo inteiro para as pessoas da época da Bíblia?"
+  video_id: qgikRaQkPGU
+  resposta_entre_s: [[190, 225], [354, 395]]
+
+- pergunta: "o que Jesus disse sobre o dilúvio?"
+  video_id: qgikRaQkPGU
+  pessoa: Rodrigo Silva
+  resposta_entre_s: [[303, 354], [365, 395]]
+
+- pergunta: "o que o apóstolo Pedro fala sobre o dilúvio?"
+  video_id: qgikRaQkPGU
+  pessoa: Rodrigo Silva
+  resposta_entre_s: [[320, 345], [1110, 1141]]
+
+- pergunta: "por que um tsunami pode parecer água vindo do céu?"
+  video_id: qgikRaQkPGU
+  pessoa: Sérgio Sacani
+  resposta_entre_s: [415, 433]
+
+- pergunta: "qual a origem da água da Terra?"
+  video_id: qgikRaQkPGU
+  pessoa: Sérgio Sacani
+  resposta_entre_s: [478, 535]
+
+- pergunta: "a Terra é mesmo um planeta água?"
+  video_id: qgikRaQkPGU
+  pessoa: Sérgio Sacani
+  resposta_entre_s: [520, 583]
+
+- pergunta: "existe um oceano embaixo da terra?"
+  video_id: qgikRaQkPGU
+  pessoa: Sérgio Sacani
+  resposta_entre_s: [[583, 654], [690, 712]]
+
+- pergunta: "é verdade que o ser humano é 98% macaco?"
+  video_id: qgikRaQkPGU
+  pessoa: Rodrigo Silva
+  resposta_entre_s: [654, 690]
+
+- pergunta: "o universo é jovem ou antigo?"
+  video_id: qgikRaQkPGU
+  pessoa: Rodrigo Silva
+  resposta_entre_s: [758, 803]
+
+- pergunta: "o que significa a terra sem forma e vazia no Gênesis?"
+  video_id: qgikRaQkPGU
+  pessoa: Rodrigo Silva
+  resposta_entre_s: [803, 834]
+
+- pergunta: "de onde vieram as águas do dilúvio segundo a Bíblia?"
+  video_id: qgikRaQkPGU
+  pessoa: Rodrigo Silva
+  resposta_entre_s: [[395, 415], [834, 865]]
+
+- pergunta: "por que o dilúvio não pode ter sido apenas uma inundação local?"
+  video_id: qgikRaQkPGU
+  pessoa: Rodrigo Silva
+  resposta_entre_s: [[335, 354], [855, 928]]
+
+- pergunta: "o que é catastrofismo universal?"
+  video_id: qgikRaQkPGU
+  pessoa: Rodrigo Silva
+  resposta_entre_s: [[928, 990], [1078, 1110]]
+
+- pergunta: "as manchas escuras da Lua são de vulcões?"
+  video_id: qgikRaQkPGU
+  pessoa: Sérgio Sacani
+  resposta_entre_s: [1000, 1052]
+
+- pergunta: "o que causou a extinção dos dinossauros?"
+  video_id: qgikRaQkPGU
+  pessoa: Rodrigo Silva
+  resposta_entre_s: [[1052, 1078], [1110, 1141]]
+
+- pergunta: "qual a diferença entre fenômenos geológicos ordinários e extraordinários?"
+  video_id: qgikRaQkPGU
+  pessoa: Rodrigo Silva
+  resposta_entre_s: [1160, 1234]
+
+- pergunta: "os fósseis mostram que a fossilização foi rápida?"
+  video_id: qgikRaQkPGU
+  pessoa: Rodrigo Silva
+  resposta_entre_s: [1234, 1264]
+
+- pergunta: "o que os sumérios inventaram?"
+  video_id: qgikRaQkPGU
+  pessoa: Rodrigo Silva
+  resposta_entre_s: [1264, 1300]
+
+- pergunta: "o que os textos sumérios e babilônicos contam sobre o dilúvio?"
+  video_id: qgikRaQkPGU
+  pessoa: Rodrigo Silva
+  resposta_entre_s: [1295, 1357]
+
+- pergunta: "onde a arca pousou?"
+  video_id: qgikRaQkPGU
+  pessoa: Rodrigo Silva
+  resposta_entre_s: [1327, 1357]
+
+- pergunta: "a Bíblia plagiou os mitos do dilúvio?"
+  video_id: qgikRaQkPGU
+  pessoa: Rodrigo Silva
+  resposta_entre_s: [1357, 1420]
+
+- pergunta: "outras culturas pelo mundo também contam a história de um dilúvio?"
+  video_id: qgikRaQkPGU
+  pessoa: Rodrigo Silva
+  resposta_entre_s: [1389, 1512]
+
+- pergunta: "o Sérgio acha que o dilúvio pode ter sido um evento global?"
+  video_id: qgikRaQkPGU
+  pessoa: Sérgio Sacani
+  resposta_entre_s: [1512, 1561]
+
+# --- Sem resposta no vídeo ---
+
+- pergunta: "qual a opinião dele sobre criptomoedas?"
+  sem_resposta: true
+
+- pergunta: "o que eles pensam sobre inteligência artificial?"
+  sem_resposta: true
+
+- pergunta: "as vacinas são seguras?"
+  sem_resposta: true
+
+- pergunta: "como se formam os buracos negros?"
+  sem_resposta: true
+
+- pergunta: "existe vida em Marte?"
+  sem_resposta: true
+
+- pergunta: "o que ele acha da reforma da previdência?"
+  sem_resposta: true
+
+# --- Sem resposta, mas no tema do vídeo (negativos difíceis: testam o limiar de verdade) ---
+
+- pergunta: "quantos animais cabiam na arca de Noé?"
+  sem_resposta: true
+
+- pergunta: "quanto tempo durou a chuva do dilúvio?"
+  sem_resposta: true
+
+- pergunta: "qual era o tamanho da arca?"
+  sem_resposta: true
+
+- pergunta: "quantos anos Noé viveu?"
+  sem_resposta: true
+
+- pergunta: "o Sérgio acredita em Deus?"
+  sem_resposta: true
+
+- pergunta: "o que o livro de Enoque diz sobre o dilúvio?"
+  sem_resposta: true
