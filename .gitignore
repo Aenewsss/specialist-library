@@ -6,3 +6,4 @@ __pycache__/
 data/
 eval/resultados/*.json
 *.egg-info/
+.claude/

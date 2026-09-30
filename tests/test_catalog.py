@@ -41,3 +41,17 @@ def test_add_same_video_twice_does_not_duplicate(db):
 def test_add_video_for_unknown_pessoa_fails(db):
     with pytest.raises(catalog.PessoaNotFound):
         catalog.add_youtube_video(db, VIDEO_URL, uuid4())
+
+
+def test_lists_only_people_who_have_trechos(db):
+    from app.ingest import repository
+    from app.ingest.models import Chunk
+
+    speaker = catalog.add_pessoa(db, "Com trecho")
+    catalog.add_pessoa(db, "Sem trecho")
+    conteudo_id = catalog.add_youtube_video(db, VIDEO_URL).conteudo_id
+    with db.transaction():
+        repository.replace_trechos(db, conteudo_id, [Chunk(0, 10, "fala", "SPEAKER_00")])
+        db.execute("UPDATE trecho SET pessoa_id = %s", (speaker,))
+
+    assert [p["nome"] for p in catalog.list_pessoas_with_trechos(db)] == ["Com trecho"]

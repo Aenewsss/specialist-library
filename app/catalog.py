@@ -27,6 +27,18 @@ def add_pessoa(conn: psycopg.Connection, nome: str, bio_curta: str | None = None
     return row["id"]
 
 
+def list_pessoas_with_trechos(conn: psycopg.Connection) -> list[dict]:
+    """Pessoas que têm ao menos um trecho atribuído: as que a busca consegue devolver."""
+    rows = conn.execute(
+        "SELECT p.id, p.nome,"
+        " ARRAY(SELECT a.nome FROM pessoa_area pa JOIN area a ON a.id = pa.area_id"
+        "       WHERE pa.pessoa_id = p.id ORDER BY a.nome) AS areas"
+        " FROM pessoa p WHERE EXISTS (SELECT 1 FROM trecho t WHERE t.pessoa_id = p.id)"
+        " ORDER BY p.nome"
+    ).fetchall()
+    return [{"id": str(row["id"]), "nome": row["nome"], "areas": row["areas"]} for row in rows]
+
+
 def add_youtube_video(conn: psycopg.Connection, url: str, dono_pessoa_id: UUID | None = None) -> RegisteredVideo:
     """Registra o vídeo e enfileira as etapas do pipeline. Idempotente por video_id
     (e completa etapas que faltarem, caso o pipeline tenha ganhado etapas novas)."""

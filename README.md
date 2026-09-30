@@ -21,4 +21,13 @@ echo "HF_TOKEN=..." > .env              # pyannote exige token do Hugging Face
 .venv/bin/pytest
 ```
 
+## Interface web
+
+```bash
+.venv/bin/biblioteca serve                 # API em 127.0.0.1:8000 (modelos carregam uma vez)
+cd web && npm install && npm run dev       # http://localhost:5173 (repassa /api para a API)
+```
+
+`API_URL=http://127.0.0.1:8001 npm run dev` aponta a interface para outra instância da API.
+
 Postgres escuta em `localhost:5442`. Configuração em `config.yaml` (`DATABASE_URL` no ambiente sobrescreve).

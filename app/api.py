@@ -5,6 +5,7 @@ from uuid import UUID
 from fastapi import FastAPI
 from pydantic import BaseModel, Field
 
+from app import catalog
 from app.config import get_config
 from app.db import connect
 from app.search.models import SearchFilters
@@ -44,6 +45,12 @@ app = FastAPI(title="Biblioteca de Especialistas", lifespan=lifespan)
 @app.get("/health")
 def health() -> dict:
     return {"status": "ok"}
+
+
+@app.get("/pessoas")
+def pessoas() -> list[dict]:
+    with connect() as conn:
+        return catalog.list_pessoas_with_trechos(conn)
 
 
 @app.post("/ask")
