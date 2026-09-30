@@ -78,15 +78,19 @@ class UnconfirmedSpeaker:
     label: str
     voice: list[float]
     speaking_seconds: float
+    current_pessoa_id: UUID | None
 
 
 def unconfirmed_speakers(conn: psycopg.Connection, conteudo_id: UUID) -> list[UnconfirmedSpeaker]:
     rows = conn.execute(
-        "SELECT rotulo, embedding_voz::text AS voz, segundos_fala FROM falante_conteudo"
+        "SELECT rotulo, embedding_voz::text AS voz, segundos_fala, pessoa_id FROM falante_conteudo"
         " WHERE conteudo_id = %s AND NOT confirmado AND NOT ignorado AND embedding_voz IS NOT NULL",
         (conteudo_id,),
     ).fetchall()
-    return [UnconfirmedSpeaker(row["rotulo"], _parse_vector(row["voz"]), row["segundos_fala"]) for row in rows]
+    return [
+        UnconfirmedSpeaker(row["rotulo"], _parse_vector(row["voz"]), row["segundos_fala"], row["pessoa_id"])
+        for row in rows
+    ]
 
 
 def voice_samples_by_pessoa(conn: psycopg.Connection) -> dict[UUID, list[list[float]]]:

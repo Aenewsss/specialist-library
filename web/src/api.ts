@@ -52,6 +52,59 @@ export function listPessoas(): Promise<Pessoa[]> {
   return request<Pessoa[]>('/pessoas')
 }
 
+export interface PessoaCadastro {
+  id: string
+  nome: string
+  bio_curta: string | null
+}
+
+export interface AmostraVoz {
+  inicio_s: number
+  texto: string
+  link: string
+}
+
+export interface VozPendente {
+  conteudo_id: string
+  rotulo: string
+  segundos_fala: number
+  conteudo_titulo: string | null
+  publicado_em: string | null
+  amostras: AmostraVoz[]
+}
+
+export function listAllPessoas(): Promise<PessoaCadastro[]> {
+  return request<PessoaCadastro[]>('/pessoas?todas=true')
+}
+
+export function createPessoa(nome: string, bioCurta: string | null): Promise<PessoaCadastro> {
+  return request<PessoaCadastro>('/pessoas', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ nome, bio_curta: bioCurta }),
+  })
+}
+
+export function listPendingVoices(): Promise<VozPendente[]> {
+  return request<VozPendente[]>('/falantes/pendentes')
+}
+
+function voicePath(voz: VozPendente, action: string): string {
+  return `/falantes/${voz.conteudo_id}/${encodeURIComponent(voz.rotulo)}/${action}`
+}
+
+export function confirmVoice(voz: VozPendente, pessoaId: string): Promise<{ outras_vozes_reconhecidas: number }> {
+  return request(voicePath(voz, 'confirmar'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ pessoa_id: pessoaId }),
+  })
+}
+
+export function ignoreVoice(voz: VozPendente): Promise<{ trechos_removidos: number }> {
+  return request(voicePath(voz, 'ignorar'), { method: 'POST' })
+}
+
 export function ask(pergunta: string, pessoaIds: string[]): Promise<Resposta> {
   return request<Resposta>('/ask', {
     method: 'POST',

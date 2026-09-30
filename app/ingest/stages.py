@@ -9,7 +9,8 @@ import psycopg
 
 from app.config import Config
 from app.ingest import repository
-from app.ingest.attribute import VoiceMatch, assign_speakers, match_voice
+from app.ingest.attribute import assign_speakers
+from app.ingest.attribution import attribute_conteudo, attribution_rules
 from app.ingest.chunk import ChunkingRules, chunk_segments
 from app.ingest.connectors.base import Connector
 from app.ingest.connectors.youtube import YoutubeConnector
@@ -92,20 +93,7 @@ class IngestionStages:
             repository.save_diarization(self.conn, conteudo_id, diarization)
 
     def attribute(self, conteudo_id: UUID) -> None:
-        samples = repository.voice_samples_by_pessoa(self.conn)
-        with self.conn.transaction():
-            for speaker in repository.unconfirmed_speakers(self.conn, conteudo_id):
-                match = self._match_speaker(speaker, samples)
-                repository.set_speaker_attribution(
-                    self.conn, conteudo_id, speaker.label, match.pessoa_id, match.similarity
-                )
-            repository.sync_trecho_pessoas(self.conn, conteudo_id)
-
-    def _match_speaker(self, speaker: repository.UnconfirmedSpeaker, samples) -> VoiceMatch:
-        """Pouca fala gera vetor de voz pouco confiável: fica sem autor e vai para revisão."""
-        if speaker.speaking_seconds < self.config.atribuicao.min_segundos_fala:
-            return VoiceMatch(pessoa_id=None, similarity=None)
-        return match_voice(speaker.voice, samples, self.config.atribuicao.limiar_voz)
+        attribute_conteudo(self.conn, conteudo_id, attribution_rules(self.config))
 
     def chunk(self, conteudo_id: UUID) -> None:
         conteudo = repository.get_conteudo(self.conn, conteudo_id)

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { Trecho } from '../api'
 import { formatDate, formatTimestamp, parseYoutubeLink } from '../format'
+import { YoutubePlayer } from './YoutubePlayer'
 
 export function TrechoCard({ trecho, lowConfidence = false }: { trecho: Trecho; lowConfidence?: boolean }) {
   const [isPlayerOpen, setPlayerOpen] = useState(false)
@@ -31,16 +32,7 @@ export function TrechoCard({ trecho, lowConfidence = false }: { trecho: Trecho; 
       </div>
 
       {youtube && isPlayerOpen && (
-        <div className="player">
-          <iframe
-            src={`https://www.youtube-nocookie.com/embed/${youtube.videoId}?start=${youtube.startS}&autoplay=1`}
-            title={`${trecho.conteudo_titulo ?? 'Vídeo'} a partir de ${timestamp}`}
-            allow="autoplay; encrypted-media; picture-in-picture"
-            // O YouTube recusa embeds sem Referer (erro 153).
-            referrerPolicy="strict-origin-when-cross-origin"
-            allowFullScreen
-          />
-        </div>
+        <YoutubePlayer position={youtube} title={`${trecho.conteudo_titulo ?? 'Vídeo'} a partir de ${timestamp}`} />
       )}
     </article>
   )

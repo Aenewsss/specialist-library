@@ -27,6 +27,11 @@ def add_pessoa(conn: psycopg.Connection, nome: str, bio_curta: str | None = None
     return row["id"]
 
 
+def list_all_pessoas(conn: psycopg.Connection) -> list[dict]:
+    rows = conn.execute("SELECT id, nome, bio_curta FROM pessoa ORDER BY nome").fetchall()
+    return [{"id": str(row["id"]), "nome": row["nome"], "bio_curta": row["bio_curta"]} for row in rows]
+
+
 def list_pessoas_with_trechos(conn: psycopg.Connection) -> list[dict]:
     """Pessoas que têm ao menos um trecho atribuído: as que a busca consegue devolver."""
     rows = conn.execute(
@@ -45,7 +50,7 @@ def add_youtube_video(conn: psycopg.Connection, url: str, dono_pessoa_id: UUID |
     video_id = extract_video_id(url)
     with conn.transaction():
         if dono_pessoa_id is not None:
-            _ensure_pessoa_exists(conn, dono_pessoa_id)
+            ensure_pessoa_exists(conn, dono_pessoa_id)
         fonte_id = _upsert_video_fonte(conn, video_id, dono_pessoa_id)
         conteudo_id, created = _upsert_conteudo(conn, fonte_id, video_id)
         _enqueue_pipeline(conn, conteudo_id)
@@ -53,7 +58,7 @@ def add_youtube_video(conn: psycopg.Connection, url: str, dono_pessoa_id: UUID |
     return RegisteredVideo(conteudo_id=conteudo_id, video_id=video_id, created=created)
 
 
-def _ensure_pessoa_exists(conn: psycopg.Connection, pessoa_id: UUID) -> None:
+def ensure_pessoa_exists(conn: psycopg.Connection, pessoa_id: UUID) -> None:
     if conn.execute("SELECT 1 FROM pessoa WHERE id = %s", (pessoa_id,)).fetchone() is None:
         raise PessoaNotFound(f"Pessoa {pessoa_id} não cadastrada")
 

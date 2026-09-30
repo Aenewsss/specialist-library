@@ -73,3 +73,64 @@ def test_speaker_without_valid_voice_is_stored_without_embedding(db):
         repository.save_diarization(db, conteudo_id, diarization)
 
     assert [s.label for s in repository.unconfirmed_speakers(db, conteudo_id)] == ["SPEAKER_00"]
+
+
+def test_pending_lists_unattributed_voices_with_samples(db, diarized_video):
+    [pending_a, pending_b] = sorted(speakers.list_pending_speakers(db), key=lambda p: p["rotulo"])
+
+    assert (pending_a["rotulo"], pending_b["rotulo"]) == ("SPEAKER_00", "SPEAKER_01")
+    assert pending_a["amostras"] == [
+        {"inicio_s": 0, "texto": "fala A", "link": "https://www.youtube.com/watch?v=qgikRaQkPGU&t=0s"}
+    ]
+
+
+def test_confirmed_or_ignored_voices_leave_the_pending_list(db, diarized_video):
+    speakers.confirm_speaker(db, diarized_video, "SPEAKER_00", catalog.add_pessoa(db, "Sérgio Sacani"))
+    speakers.ignore_speaker(db, diarized_video, "SPEAKER_01")
+
+    assert speakers.list_pending_speakers(db) == []
+
+
+def test_confirming_a_voice_recognizes_the_same_voice_in_another_video(db, diarized_video):
+    from app.ingest.attribution import AttributionRules
+
+    other_video = catalog.add_youtube_video(db, "https://youtu.be/8ZlY48EJwSw").conteudo_id
+    with db.transaction():
+        repository.save_diarization(
+            db, other_video,
+            Diarization(turns=[SpeakerTurn(0, 60, "SPEAKER_07")], voice_embeddings={"SPEAKER_07": VOICE_A}),
+        )
+        repository.replace_trechos(db, other_video, [Chunk(0, 60, "outra fala A", "SPEAKER_07")])
+    sergio = catalog.add_pessoa(db, "Sérgio Sacani")
+    rules = AttributionRules(voice_threshold=0.6, min_speaking_seconds=5)
+
+    recognized = speakers.confirm_and_propagate(db, diarized_video, "SPEAKER_00", sergio, rules)
+
+    assert recognized == 1
+    trecho = db.execute("SELECT pessoa_id, revisado FROM trecho WHERE conteudo_id = %s", (other_video,)).fetchone()
+    assert (trecho["pessoa_id"], trecho["revisado"]) == (sergio, False)  # automático, não revisado
+
+
+def test_confirming_with_unknown_pessoa_fails(db, diarized_video):
+    from uuid import uuid4
+
+    from app.ingest.attribution import AttributionRules
+
+    with pytest.raises(catalog.PessoaNotFound):
+        speakers.confirm_and_propagate(db, diarized_video, "SPEAKER_00", uuid4(), AttributionRules(0.6, 5))
+
+
+def test_propagation_counts_only_voices_that_had_no_author(db, diarized_video):
+    from app.ingest.attribution import AttributionRules, attribute_all_pending
+
+    rules = AttributionRules(voice_threshold=0.6, min_speaking_seconds=5)
+    speakers.confirm_speaker(db, diarized_video, "SPEAKER_00", catalog.add_pessoa(db, "Sérgio Sacani"))
+    other_video = catalog.add_youtube_video(db, "https://youtu.be/8ZlY48EJwSw").conteudo_id
+    with db.transaction():
+        repository.save_diarization(
+            db, other_video,
+            Diarization(turns=[SpeakerTurn(0, 60, "SPEAKER_07")], voice_embeddings={"SPEAKER_07": VOICE_A}),
+        )
+
+    assert attribute_all_pending(db, rules) == 1
+    assert attribute_all_pending(db, rules) == 0  # já tinha autor: não conta de novo
