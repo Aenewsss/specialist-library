@@ -1,14 +1,16 @@
 import { useCallback, useEffect, useState } from 'react'
 import { listPendingVoices } from './api'
 import { SearchPage } from './components/SearchPage'
+import { VideosPage } from './components/VideosPage'
 import { VoiceReview } from './components/VoiceReview'
 
-type Tab = 'buscar' | 'vozes'
+type Tab = 'buscar' | 'videos' | 'vozes'
 
-const TAB_HASH: Record<Tab, string> = { buscar: '', vozes: '#vozes' }
+const TAB_HASH: Record<Tab, string> = { buscar: '', videos: '#videos', vozes: '#vozes' }
 
 function tabFromHash(): Tab {
-  return window.location.hash === TAB_HASH.vozes ? 'vozes' : 'buscar'
+  const match = (Object.keys(TAB_HASH) as Tab[]).find((tab) => TAB_HASH[tab] && TAB_HASH[tab] === window.location.hash)
+  return match ?? 'buscar'
 }
 
 export default function App() {
@@ -48,13 +50,20 @@ export default function App() {
         <button type="button" className="tab" aria-current={tab === 'buscar' ? 'page' : undefined} onClick={() => openTab('buscar')}>
           Buscar
         </button>
+        <button type="button" className="tab" aria-current={tab === 'videos' ? 'page' : undefined} onClick={() => openTab('videos')}>
+          Vídeos
+        </button>
         <button type="button" className="tab" aria-current={tab === 'vozes' ? 'page' : undefined} onClick={() => openTab('vozes')}>
           Vozes sem autor
           {pendingCount !== null && pendingCount > 0 && <span className="tab__badge">{pendingCount}</span>}
         </button>
       </nav>
 
-      <main>{tab === 'buscar' ? <SearchPage /> : <VoiceReview onPendingCountChange={updatePendingCount} />}</main>
+      <main>
+        {tab === 'buscar' && <SearchPage />}
+        {tab === 'videos' && <VideosPage />}
+        {tab === 'vozes' && <VoiceReview onPendingCountChange={updatePendingCount} />}
+      </main>
 
       <footer className="footer">Nenhum texto é escrito por IA: cada trecho é a transcrição literal da fala, com link para conferir na fonte.</footer>
     </div>

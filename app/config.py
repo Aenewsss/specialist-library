@@ -4,9 +4,12 @@ from pathlib import Path
 from typing import Literal
 
 import yaml
+from dotenv import load_dotenv
 from pydantic import BaseModel
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
+# Segredos (HF_TOKEN) ficam no .env; carregado aqui para valer no CLI, na API e nos scripts.
+load_dotenv(PROJECT_ROOT / ".env")
 CONFIG_PATH = Path(os.environ.get("BIBLIOTECA_CONFIG", PROJECT_ROOT / "config.yaml"))
 
 

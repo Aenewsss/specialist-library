@@ -112,3 +112,47 @@ export function ask(pergunta: string, pessoaIds: string[]): Promise<Resposta> {
     body: JSON.stringify({ pergunta, pessoa_ids: pessoaIds }),
   })
 }
+
+export type VideoStatus = 'na_fila' | 'processando' | 'pronto' | 'erro'
+
+export interface Video {
+  conteudo_id: string
+  video_id: string | null
+  titulo: string | null
+  publicado_em: string | null
+  url: string
+  status: VideoStatus
+  etapa_atual: string | null
+  etapa_atual_descricao: string | null
+  etapas_concluidas: number
+  total_etapas: number
+  erro: string | null
+  trechos: number
+  pessoas: string[]
+  vozes_pendentes: number
+}
+
+export class InvalidRequestError extends Error {}
+
+export function listVideos(): Promise<Video[]> {
+  return request<Video[]>('/videos')
+}
+
+export async function addVideo(url: string): Promise<{ conteudo_id: string; novo: boolean }> {
+  const response = await fetch(`${API_BASE}/videos`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ url }),
+  }).catch(() => {
+    throw new ApiUnavailableError('Não foi possível falar com a API.')
+  })
+  if (response.status === 400 || response.status === 422) {
+    throw new InvalidRequestError('Esse link não parece ser de um vídeo do YouTube.')
+  }
+  if (!response.ok) throw new Error(`Erro ${response.status} ao adicionar o vídeo.`)
+  return response.json()
+}
+
+export function retryVideo(conteudoId: string): Promise<{ reiniciado_em: string }> {
+  return request(`/videos/${conteudoId}/tentar-de-novo`, { method: 'POST' })
+}

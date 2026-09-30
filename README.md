@@ -12,7 +12,7 @@ echo "HF_TOKEN=..." > .env              # pyannote exige token do Hugging Face
 .venv/bin/biblioteca migrate
 .venv/bin/biblioteca add-pessoa "Nome"
 .venv/bin/biblioteca add-video "https://www.youtube.com/watch?v=..."
-.venv/bin/biblioteca ingest             # coleta → transcrição → diarização → atribuição → chunking → embeddings
+.venv/bin/biblioteca ingest             # opcional: a API já processa a fila em segundo plano
 .venv/bin/biblioteca falantes <conteudo_id>                       # vozes + links para ouvir
 .venv/bin/biblioteca rotular-falante <conteudo_id> SPEAKER_00 --pessoa <id>
 .venv/bin/biblioteca ignorar-falante <conteudo_id> SPEAKER_01     # ex.: apresentador
@@ -22,6 +22,9 @@ echo "HF_TOKEN=..." > .env              # pyannote exige token do Hugging Face
 ```
 
 ## Interface web
+
+Abas: **Buscar**, **Vídeos** (adicionar pelo link e acompanhar o processamento) e
+**Vozes sem autor** (ouvir amostras e dizer de quem é cada voz).
 
 ```bash
 .venv/bin/biblioteca serve                 # API em 127.0.0.1:8000 (modelos carregam uma vez)

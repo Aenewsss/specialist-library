@@ -5,10 +5,14 @@ from uuid import UUID
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
-from app import catalog, speakers
+from app import catalog, speakers, videos
 from app.config import get_config
 from app.db import connect
 from app.ingest.attribution import attribution_rules
+from app.ingest.background import BackgroundIngestor
+from app.ingest.connectors.youtube import InvalidYoutubeUrl
+from app.ingest.models import PIPELINE_STAGES
+from app.ingest.worker import restart_from
 from app.search.models import SearchFilters
 from app.search.service import build_search_service
 
@@ -40,13 +44,21 @@ class ConfirmSpeakerRequest(BaseModel):
     pessoa_id: UUID
 
 
+class AddVideoRequest(BaseModel):
+    url: str = Field(min_length=10)
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Modelos carregados e aquecidos uma vez por processo, antes de aceitar requisições.
-    search = build_search_service(get_config())
+    config = get_config()
+    search = build_search_service(config)
     search.warm_up()
     app.state.search = search
+    app.state.ingestor = BackgroundIngestor(config)
+    app.state.ingestor.start()
     yield
+    app.state.ingestor.stop()
 
 
 app = FastAPI(title="Biblioteca de Especialistas", lifespan=lifespan)
@@ -103,3 +115,36 @@ def ignore_speaker(conteudo_id: UUID, rotulo: str) -> dict:
 def ask(request: AskRequest) -> dict:
     with connect() as conn:
         return app.state.search.ask(conn, request.pergunta, request.to_filters())
+
+
+@app.get("/videos")
+def list_videos() -> list[dict]:
+    with connect() as conn:
+        return videos.list_videos(conn)
+
+
+@app.post("/videos", status_code=201)
+def add_video(request: AddVideoRequest) -> dict:
+    try:
+        with connect() as conn:
+            registered = catalog.add_youtube_video(conn, request.url)
+    except InvalidYoutubeUrl as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
+    app.state.ingestor.trigger()
+    return {"conteudo_id": str(registered.conteudo_id), "video_id": registered.video_id, "novo": registered.created}
+
+
+@app.post("/videos/{conteudo_id}/tentar-de-novo")
+def retry_video(conteudo_id: UUID) -> dict:
+    """Recomeça da etapa que falhou (as anteriores já estão prontas)."""
+    with connect() as conn:
+        failed = conn.execute(
+            "SELECT etapa FROM job_ingestao WHERE conteudo_id = %s AND status = 'erro'", (conteudo_id,)
+        ).fetchall()
+        if not failed:
+            raise HTTPException(status_code=404, detail="Nenhuma etapa com erro nesse vídeo")
+        first_failed = min((row["etapa"] for row in failed), key=PIPELINE_STAGES.index)
+        restart_from(conn, conteudo_id, first_failed)
+        conn.commit()
+    app.state.ingestor.trigger()
+    return {"reiniciado_em": first_failed}

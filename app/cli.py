@@ -3,15 +3,13 @@ import logging
 from uuid import UUID
 
 import typer
-from dotenv import load_dotenv
 
 from app import catalog, speakers
-from app.config import PROJECT_ROOT, get_config
+from app.config import get_config
 from app.db import apply_migrations, connect
 from app.ingest.connectors.youtube import InvalidYoutubeUrl
 from app.ingest.models import PIPELINE_STAGES
 
-load_dotenv(PROJECT_ROOT / ".env")
 app = typer.Typer(help="Biblioteca de Especialistas", no_args_is_help=True)
 
 
