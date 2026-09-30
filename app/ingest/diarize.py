@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 from typing import Protocol
 
+from app.ingest.attribute import is_valid_voice
 from app.ingest.audio import SAMPLE_RATE, load_mono_16k
 from app.ingest.models import Diarization, SpeakerTurn
 
@@ -32,7 +33,9 @@ class PyannoteDiarizer:
             for segment, _, label in output.exclusive_speaker_diarization.itertracks(yield_label=True)
         ]
         labels = output.speaker_diarization.labels()
-        embeddings = {label: output.speaker_embeddings[index].tolist() for index, label in enumerate(labels)}
+        embeddings = {
+            label: _valid_or_none(output.speaker_embeddings[index].tolist()) for index, label in enumerate(labels)
+        }
         return Diarization(turns=turns, voice_embeddings=embeddings)
 
     def _load(self):
@@ -46,3 +49,7 @@ class PyannoteDiarizer:
             self._pipeline = Pipeline.from_pretrained(self._model_name, token=token)
             self._pipeline.to(torch.device(self._device))
         return self._pipeline
+
+
+def _valid_or_none(voice: list[float]) -> list[float] | None:
+    return voice if is_valid_voice(voice) else None

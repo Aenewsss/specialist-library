@@ -168,7 +168,7 @@ def _print_groups(groups: list[dict]) -> None:
 
 
 def _confidence_text(confidence: float | None) -> str:
-    return "sem amostra de voz para comparar" if confidence is None else f"similaridade {confidence:.2f}"
+    return "sem comparação: pouca fala ou nenhuma amostra de voz" if confidence is None else f"similaridade {confidence:.2f}"
 
 
 def _fail(error: Exception) -> None:

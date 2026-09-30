@@ -64,3 +64,12 @@ def test_ignoring_a_speaker_removes_its_trechos(db, diarized_video):
     assert [row["falante_rotulo"] for row in db.execute("SELECT falante_rotulo FROM trecho")] == ["SPEAKER_00"]
     assert repository.ignored_speakers(db, diarized_video) == {"SPEAKER_01"}
     assert "SPEAKER_01" not in {s.label for s in repository.unconfirmed_speakers(db, diarized_video)}
+
+
+def test_speaker_without_valid_voice_is_stored_without_embedding(db):
+    conteudo_id = catalog.add_youtube_video(db, "https://youtu.be/0LS2F1PPH74").conteudo_id
+    diarization = Diarization(turns=[SpeakerTurn(0, 30, "SPEAKER_00")], voice_embeddings={"SPEAKER_00": VOICE_A, "SPEAKER_01": None})
+    with db.transaction():
+        repository.save_diarization(db, conteudo_id, diarization)
+
+    assert [s.label for s in repository.unconfirmed_speakers(db, conteudo_id)] == ["SPEAKER_00"]

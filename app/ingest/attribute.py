@@ -35,15 +35,29 @@ def match_voice(
     samples_by_pessoa: Mapping[UUID, Iterable[Sequence[float]]],
     threshold: float,
 ) -> VoiceMatch:
-    """Compara a voz com as amostras confirmadas; abaixo do limiar, não atribui."""
+    """Compara a voz com as amostras confirmadas; abaixo do limiar, não atribui.
+    Voz inválida (vetor nulo ou não finito) nunca é atribuída."""
+    if not is_valid_voice(voice):
+        return VoiceMatch(pessoa_id=None, similarity=None)
     best_pessoa, best_similarity = None, None
     for pessoa_id, samples in samples_by_pessoa.items():
-        similarity = max(cosine_similarity(voice, sample) for sample in samples)
+        similarities = [cosine_similarity(voice, sample) for sample in samples if is_valid_voice(sample)]
+        if not similarities:
+            continue
+        similarity = max(similarities)
         if best_similarity is None or similarity > best_similarity:
             best_pessoa, best_similarity = pessoa_id, similarity
     if best_similarity is None or best_similarity < threshold:
         return VoiceMatch(pessoa_id=None, similarity=best_similarity)
     return VoiceMatch(pessoa_id=best_pessoa, similarity=best_similarity)
+
+
+def is_valid_voice(voice: Sequence[float] | None) -> bool:
+    """O pyannote devolve vetor de zeros para falante sem fala suficiente: 0/0 no cosseno."""
+    if voice is None:
+        return False
+    vector = np.asarray(voice, dtype=float)
+    return bool(np.all(np.isfinite(vector)) and np.linalg.norm(vector) > 0)
 
 
 def cosine_similarity(a: Sequence[float], b: Sequence[float]) -> float:

@@ -41,6 +41,7 @@ class TranscricaoConfig(BaseModel):
 
 class AtribuicaoConfig(BaseModel):
     limiar_voz: float
+    min_segundos_fala: float = 5.0
 
 
 class ApiConfig(BaseModel):

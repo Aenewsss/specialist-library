@@ -60,7 +60,7 @@ def save_diarization(conn: psycopg.Connection, conteudo_id: UUID, diarization: D
             "INSERT INTO falante_conteudo (conteudo_id, rotulo, embedding_voz, segundos_fala)"
             " VALUES (%s, %s, %s::vector, %s)",
             [
-                (conteudo_id, label, str(embedding), seconds_by_speaker.get(label, 0.0))
+                (conteudo_id, label, str(embedding) if embedding is not None else None, seconds_by_speaker.get(label, 0.0))
                 for label, embedding in diarization.voice_embeddings.items()
             ],
         )
@@ -77,15 +77,16 @@ def _speaking_seconds(turns: list[SpeakerTurn]) -> dict[str, float]:
 class UnconfirmedSpeaker:
     label: str
     voice: list[float]
+    speaking_seconds: float
 
 
 def unconfirmed_speakers(conn: psycopg.Connection, conteudo_id: UUID) -> list[UnconfirmedSpeaker]:
     rows = conn.execute(
-        "SELECT rotulo, embedding_voz::text AS voz FROM falante_conteudo"
+        "SELECT rotulo, embedding_voz::text AS voz, segundos_fala FROM falante_conteudo"
         " WHERE conteudo_id = %s AND NOT confirmado AND NOT ignorado AND embedding_voz IS NOT NULL",
         (conteudo_id,),
     ).fetchall()
-    return [UnconfirmedSpeaker(row["rotulo"], _parse_vector(row["voz"])) for row in rows]
+    return [UnconfirmedSpeaker(row["rotulo"], _parse_vector(row["voz"]), row["segundos_fala"]) for row in rows]
 
 
 def voice_samples_by_pessoa(conn: psycopg.Connection) -> dict[UUID, list[list[float]]]:

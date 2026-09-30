@@ -19,6 +19,7 @@ transcricao:
 
 atribuicao:
   limiar_voz: 0.6         # similaridade de cosseno mínima com amostra_voz; calibrar
+  min_segundos_fala: 5    # voz com menos fala que isso não é atribuída automaticamente
 
 chunk:
   duracao_min_s: 45

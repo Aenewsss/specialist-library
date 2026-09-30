@@ -37,3 +37,18 @@ def test_voice_below_threshold_stays_unattributed():
 
 def test_no_samples_means_no_attribution():
     assert match_voice([1.0, 0.0], {}, threshold=0.6).pessoa_id is None
+
+
+def test_zero_voice_is_never_attributed():
+    samples = {uuid4(): [[1.0, 0.0]]}
+
+    match = match_voice([0.0, 0.0], samples, threshold=0.6)
+
+    assert match.pessoa_id is None and match.similarity is None
+
+
+def test_invalid_samples_are_ignored():
+    sergio = uuid4()
+    samples = {sergio: [[0.0, 0.0], [1.0, 0.0]], uuid4(): [[float("nan"), 1.0]]}
+
+    assert match_voice([1.0, 0.0], samples, threshold=0.6).pessoa_id == sergio

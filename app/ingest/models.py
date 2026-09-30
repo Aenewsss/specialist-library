@@ -38,7 +38,7 @@ class SpeakerTurn:
 @dataclass(frozen=True)
 class Diarization:
     turns: list[SpeakerTurn]
-    voice_embeddings: dict[str, list[float]]  # rótulo → vetor de voz
+    voice_embeddings: dict[str, list[float] | None]  # rótulo → vetor de voz (None se inválido)
 
 
 @dataclass(frozen=True)
