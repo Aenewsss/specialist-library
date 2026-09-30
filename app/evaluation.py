@@ -90,6 +90,39 @@ def evaluate(runs: Sequence[QuestionRun], threshold: float, max_results: int) ->
     )
 
 
+@dataclass(frozen=True)
+class RelatedMetrics:
+    """Custo e ganho de mostrar relacionados quando não há resposta direta."""
+    related_threshold: float
+    rescued: float  # com resposta, sem acerto direto, mas o trecho certo aparece nos relacionados
+    unanswerable_with_related: float  # sem resposta, mas a tela mostra relacionados
+
+
+def evaluate_related(
+    runs: Sequence[QuestionRun], threshold: float, related_threshold: float, max_results: int, max_related: int
+) -> RelatedMetrics:
+    answerable_misses = [
+        run for run in runs if not run.question.unanswerable and run.first_hit_rank(threshold, max_results) is None
+    ]
+    unanswerable = [run for run in runs if run.question.unanswerable]
+    return RelatedMetrics(
+        related_threshold=related_threshold,
+        rescued=_share(answerable_misses, [
+            any(is_hit(item, run.question) for item in _related(run, threshold, related_threshold, max_related))
+            for run in answerable_misses
+        ]),
+        unanswerable_with_related=_share(unanswerable, [
+            bool(_related(run, threshold, related_threshold, max_related)) for run in unanswerable
+        ]),
+    )
+
+
+def _related(run: QuestionRun, threshold: float, related_threshold: float, max_related: int) -> list[ScoredCandidate]:
+    if run.kept(threshold, max_results=1):
+        return []
+    return [item for item in run.ranked if item.score >= related_threshold][:max_related]
+
+
 def sweep(runs: Sequence[QuestionRun], thresholds: Sequence[float], max_results: int) -> list[Metrics]:
     return [evaluate(runs, threshold, max_results) for threshold in thresholds]
 

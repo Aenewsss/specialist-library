@@ -148,10 +148,18 @@ def ask(
 
 
 def _print_answer(answer: dict) -> None:
-    if not answer["encontrado"]:
-        typer.echo("Ninguém na biblioteca falou sobre isso.")
+    if answer["encontrado"]:
+        _print_groups(answer["resultados"])
         return
-    for group in answer["resultados"]:
+    if answer.get("relacionados"):
+        typer.echo("Nenhuma resposta direta. Estes trechos podem estar relacionados (baixa confiança):")
+        _print_groups(answer["relacionados"])
+        return
+    typer.echo("Ninguém na biblioteca falou sobre isso.")
+
+
+def _print_groups(groups: list[dict]) -> None:
+    for group in groups:
         typer.echo(f"\n■ {group['pessoa']['nome']}")
         for trecho in group["trechos"]:
             typer.echo(f"  [{trecho['nota_reranker']:.2f}] {trecho['conteudo_titulo']} ({trecho['publicado_em']})")

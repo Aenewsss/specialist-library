@@ -9,6 +9,8 @@
   --accent: #1f3a5f;
   --accent-soft: #e8eef6;
   --gold: #b7862b;
+  --related-soft: #f1efe9;
+  --related-line: #c9c2b4;
   --danger: #a3372e;
   --danger-soft: #fbeceb;
   --radius: 14px;
@@ -133,6 +135,11 @@ button:disabled { cursor: progress; }
 }
 .notice p { margin: 0; }
 .notice__title { font-weight: 600; color: var(--ink); margin-bottom: 4px !important; }
+.results--related .notice { margin: 0 0 24px; }
+.notice--related { background: var(--related-soft); border-color: var(--related-line); }
+.trecho--low { border-left-color: var(--related-line); border-style: dashed; border-left-style: solid; }
+.trecho--low .trecho__quote p { color: var(--ink-soft); }
+.trecho--low .relevance__bar span { background: var(--ink-faint); }
 .notice--error { background: var(--danger-soft); border-color: #f0c9c5; }
 .notice--error .notice__title { color: var(--danger); }
 

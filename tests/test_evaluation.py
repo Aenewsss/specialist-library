@@ -2,7 +2,9 @@ from dataclasses import replace
 
 import pytest
 
-from app.evaluation import QuestionRun, TestQuestion, choose_threshold, evaluate, is_hit, load_questions
+from app.evaluation import (
+    QuestionRun, TestQuestion, choose_threshold, evaluate, evaluate_related, is_hit, load_questions,
+)
 from app.search.models import ScoredCandidate
 from tests.test_answer import RODRIGO, SERGIO, candidate
 
@@ -80,3 +82,15 @@ def test_picks_the_middle_of_a_plateau_of_equivalent_thresholds():
     results = [evaluate(runs, t, 10) for t in (0.2, 0.4, 0.6, 0.8)]  # todos perfeitos
 
     assert choose_threshold(results).threshold == 0.6
+
+
+def test_related_metrics_measure_rescues_and_noise():
+    runs = [
+        QuestionRun(ARCA, [scored(RODRIGO, "Rodrigo Silva", 1300, 0.3)]),  # sem acerto direto, resgatável
+        QuestionRun(CRIPTO, [scored(SERGIO, "Sérgio Sacani", 0, 0.2)]),
+    ]
+
+    metrics = evaluate_related(runs, threshold=0.4, related_threshold=0.15, max_results=10, max_related=3)
+
+    assert (metrics.rescued, metrics.unanswerable_with_related) == (1.0, 1.0)
+    assert evaluate_related(runs, 0.4, 0.25, 10, 3).unanswerable_with_related == 0.0

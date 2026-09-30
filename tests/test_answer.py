@@ -31,7 +31,7 @@ def test_nothing_above_threshold_means_not_found():
 
     answer = build_answer("pergunta?", scored, RULES)
 
-    assert answer == {"pergunta": "pergunta?", "encontrado": False, "resultados": []}
+    assert answer == {"pergunta": "pergunta?", "encontrado": False, "resultados": [], "relacionados": []}
 
 
 def test_groups_by_pessoa_ordered_by_best_score_with_literal_text_and_link():
@@ -56,3 +56,38 @@ def test_limits_number_of_results():
     answer = build_answer("pergunta?", scored, AnswerRules(threshold=0.5, max_results=3))
 
     assert len(answer["resultados"][0]["trechos"]) == 3
+
+
+RELATED_RULES = AnswerRules(threshold=0.5, max_results=10, related_threshold=0.15, max_related=2)
+
+
+def test_without_direct_answer_returns_low_confidence_related_trechos():
+    scored = [
+        ScoredCandidate(candidate(RODRIGO, "Rodrigo", "três opiniões"), 0.36),
+        ScoredCandidate(candidate(SERGIO, "Sérgio", "algo próximo"), 0.2),
+        ScoredCandidate(candidate(SERGIO, "Sérgio", "terceiro"), 0.18),
+        ScoredCandidate(candidate(SERGIO, "Sérgio", "irrelevante"), 0.01),
+    ]
+
+    answer = build_answer("teorias?", scored, RELATED_RULES)
+
+    assert answer["encontrado"] is False and answer["resultados"] == []
+    texts = [t["texto"] for group in answer["relacionados"] for t in group["trechos"]]
+    assert texts == ["três opiniões", "algo próximo"]
+
+
+def test_related_are_not_returned_when_there_is_a_direct_answer():
+    scored = [
+        ScoredCandidate(candidate(RODRIGO, "Rodrigo", "resposta"), 0.9),
+        ScoredCandidate(candidate(SERGIO, "Sérgio", "próximo"), 0.3),
+    ]
+
+    answer = build_answer("pergunta?", scored, RELATED_RULES)
+
+    assert answer["encontrado"] and answer["relacionados"] == []
+
+
+def test_off_topic_question_has_no_related():
+    scored = [ScoredCandidate(candidate(SERGIO, "Sérgio", "x"), 0.001)]
+
+    assert build_answer("cripto?", scored, RELATED_RULES)["relacionados"] == []

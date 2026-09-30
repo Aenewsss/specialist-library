@@ -30,4 +30,6 @@ busca:
   candidatos: 50          # saída da busca híbrida
   rrf_k: 60
   top_reranker: 10
-  limiar_reranker: 0.4  # calibrado por eval/rodar.py
+  limiar_reranker: 0.3  # calibrado por eval/rodar.py
+  limiar_relacionados: 0.2  # sem resposta direta, trechos acima disso aparecem como "relacionados"
+  max_relacionados: 3

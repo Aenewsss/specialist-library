@@ -32,6 +32,8 @@ class SearchService:
         rules = AnswerRules(
             threshold=self._config.busca.limiar_reranker if threshold is None else threshold,
             max_results=self._config.busca.top_reranker,
+            related_threshold=self._config.busca.limiar_relacionados,
+            max_related=self._config.busca.max_relacionados,
         )
         return build_answer(question, scored, rules)
 

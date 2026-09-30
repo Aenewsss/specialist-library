@@ -10,6 +10,12 @@
   pessoa: Rodrigo Silva
   resposta_entre_s: [242, 303]
 
+# Pergunta real da Aenã (usa "teorias"; no vídeo o Rodrigo diz "opiniões").
+- pergunta: "quais são as teorias sobre o dilúvio?"
+  video_id: qgikRaQkPGU
+  pessoa: Rodrigo Silva
+  resposta_entre_s: [[0, 23], [242, 303]]
+
 - pergunta: "o que a geologia diz sobre o dilúvio?"
   video_id: qgikRaQkPGU
   pessoa: Sérgio Sacani

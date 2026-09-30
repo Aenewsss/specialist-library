@@ -30,6 +30,8 @@ class BuscaConfig(BaseModel):
     rrf_k: int
     top_reranker: int
     limiar_reranker: float
+    limiar_relacionados: float | None = None
+    max_relacionados: int = 3
 
 
 class TranscricaoConfig(BaseModel):

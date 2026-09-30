@@ -15,13 +15,14 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from app.config import CONFIG_PATH, PROJECT_ROOT, get_config  # noqa: E402
 from app.db import connect  # noqa: E402
 from app.evaluation import (  # noqa: E402
-    RECALL_AT, Metrics, QuestionRun, choose_threshold, evaluate, is_hit, load_questions, sweep,
+    RECALL_AT, Metrics, QuestionRun, choose_threshold, evaluate, evaluate_related, is_hit, load_questions, sweep,
 )
 from app.search.models import SearchFilters  # noqa: E402
 from app.search.service import build_search_service  # noqa: E402
 
 EVAL_DIR = PROJECT_ROOT / "eval"
 THRESHOLDS = [round(step * 0.05, 2) for step in range(0, 20)]
+RELATED_THRESHOLDS = [0.05, 0.1, 0.15, 0.2, 0.25, 0.3]
 
 
 def main() -> None:
@@ -37,7 +38,8 @@ def main() -> None:
 
     _print_sweep(results, current, best)
     _print_misses(runs, best.threshold, max_results)
-    output = _save(runs, results, current, best, config, max_results)
+    related = _print_related(runs, config)
+    output = _save(runs, results, current, best, related, config, max_results)
     print(f"\nResultado gravado em {output.relative_to(PROJECT_ROOT)}")
     if args.gravar_limiar:
         _write_threshold(best.threshold)
@@ -89,7 +91,22 @@ def _print_misses(runs: list[QuestionRun], threshold: float, max_results: int) -
             print(f"  ✗ {where}{hint}: {run.question.question}")
 
 
-def _save(runs, results, current, best, config, max_results) -> Path:
+def _print_related(runs: list[QuestionRun], config) -> list:
+    busca = config.busca
+    print(f"\nRelacionados (baixa confiança) com limiar principal {busca.limiar_reranker}:")
+    print(f"{'limiar rel.':>11} {'resgatadas':>11} {'sem resposta c/ relacionados':>29}")
+    related = []
+    for related_threshold in RELATED_THRESHOLDS:
+        metrics = evaluate_related(
+            runs, busca.limiar_reranker, related_threshold, busca.top_reranker, busca.max_relacionados
+        )
+        related.append(metrics)
+        marker = " ← atual (config)" if related_threshold == busca.limiar_relacionados else ""
+        print(f"{related_threshold:>11.2f} {metrics.rescued:>11.0%} {metrics.unanswerable_with_related:>29.0%}{marker}")
+    return related
+
+
+def _save(runs, results, current, best, related, config, max_results) -> Path:
     label = f"{config.modelos.embedding.split('/')[-1]}_{config.modelos.reranker.split('/')[-1]}"
     label += f"_chunk{config.chunk.duracao_min_s}-{config.chunk.duracao_max_s}"
     output = EVAL_DIR / "resultados" / f"{datetime.now():%Y-%m-%d_%H%M}-{label}.json"
@@ -98,6 +115,7 @@ def _save(runs, results, current, best, config, max_results) -> Path:
         "limiar_recomendado": best.__dict__,
         "limiar_atual": current.__dict__,
         "varredura": [metrics.__dict__ for metrics in results],
+        "relacionados": [metrics.__dict__ for metrics in related],
         "perguntas": [_question_detail(run, best.threshold, max_results) for run in runs],
     }, ensure_ascii=False, indent=2))
     return output

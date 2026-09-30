@@ -2,13 +2,13 @@ import { useState } from 'react'
 import type { Trecho } from '../api'
 import { formatDate, formatTimestamp, parseYoutubeLink } from '../format'
 
-export function TrechoCard({ trecho }: { trecho: Trecho }) {
+export function TrechoCard({ trecho, lowConfidence = false }: { trecho: Trecho; lowConfidence?: boolean }) {
   const [isPlayerOpen, setPlayerOpen] = useState(false)
   const youtube = parseYoutubeLink(trecho.link)
   const timestamp = trecho.inicio_s !== null ? formatTimestamp(trecho.inicio_s) : null
 
   return (
-    <article className="trecho">
+    <article className={`trecho${lowConfidence ? ' trecho--low' : ''}`}>
       <blockquote className="trecho__quote">
         <p>“{trecho.texto}”</p>
       </blockquote>

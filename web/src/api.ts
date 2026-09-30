@@ -24,6 +24,8 @@ export interface Resposta {
   pergunta: string
   encontrado: boolean
   resultados: ResultadoPessoa[]
+  /** Só vem preenchido quando não há resposta direta: trechos de baixa confiança. */
+  relacionados: ResultadoPessoa[]
 }
 
 export class ApiUnavailableError extends Error {}

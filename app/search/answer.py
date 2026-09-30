@@ -12,16 +12,29 @@ from app.search.models import Candidate, ScoredCandidate
 class AnswerRules:
     threshold: float
     max_results: int
+    related_threshold: float | None = None  # None desliga os relacionados
+    max_related: int = 3
 
 
 def build_answer(question: str, scored: Sequence[ScoredCandidate], rules: AnswerRules) -> dict:
-    kept = sorted((s for s in scored if s.score >= rules.threshold), key=lambda s: s.score, reverse=True)
-    kept = kept[: rules.max_results]
+    """Acima do limiar: resposta direta. Sem resposta direta, trechos entre os dois limiares
+    voltam à parte como relacionados, para a interface marcar como baixa confiança em vez de
+    apresentá-los como resposta."""
+    ranked = sorted(scored, key=lambda item: item.score, reverse=True)
+    kept = [item for item in ranked if item.score >= rules.threshold][: rules.max_results]
+    related = [] if kept else _related(ranked, rules)
     return {
         "pergunta": question,
         "encontrado": bool(kept),
         "resultados": _group_by_pessoa(kept),
+        "relacionados": _group_by_pessoa(related),
     }
+
+
+def _related(ranked: Sequence[ScoredCandidate], rules: AnswerRules) -> list[ScoredCandidate]:
+    if rules.related_threshold is None:
+        return []
+    return [item for item in ranked if item.score >= rules.related_threshold][: rules.max_related]
 
 
 def _group_by_pessoa(kept: Sequence[ScoredCandidate]) -> list[dict]:
